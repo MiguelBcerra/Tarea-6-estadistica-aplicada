@@ -1,0 +1,94 @@
+---
+title: "Tarea 6 estadistica aplicada"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+```{r}
+# ::: {.panel-tabset}
+# ## a) Estimador
+# $E(X) = 1(\theta/4) + 2(1 - \theta/4) = 2 - \frac{\theta}{4} \implies \hat{\theta} = 4(2 - \bar{X})$
+
+# ## b) Insesgamiento
+# $E(\hat{\theta}) = 4(2 - E(\bar{X})) = 4\left(2 - \left(2 - \frac{\theta}{4}\right)\right) = \theta$ (Insesgado).
+
+# ## c) Varianza
+# $Var(X) = E(X^2) - [E(X)]^2 = \left(4 - \frac{3\theta}{4}\right) - \left(2 - \frac{\theta}{4}\right)^2 = \frac{4\theta - \theta^2}{16}$
+# $Var(\hat{\theta}) = 16 \frac{Var(X)}{n} = \frac{4\theta - \theta^2}{n}$
+
+# ## d) ECM
+# $ECM(\hat{\theta}) = Var(\hat{\theta}) = \frac{4\theta - \theta^2}{n}$
+
+# ## e) Simulación
+theta_fijo <- 2
+
+dexr1 <- function(x, theta){
+  ifelse(x == 1, theta/4, ifelse(x == 2, 1 - theta/4, 0))
+}
+
+rexr1 <- function(n, theta){
+  sample(c(1, 2), size = n, replace = TRUE, prob = c(theta/4, 1 - theta/4))
+}
+
+estimar_theta1 <- function(X){
+  4 * (2 - mean(X))
+}
+
+df_exr1 <- data.frame(X = rexr1(1000, theta_fijo), Tipo = "Teórico")
+theta_hat1 <- estimar_theta1(df_exr1$X)
+df_temp1 <- data.frame(X = rexr1(1000, theta_hat1), Tipo = "Estimados")
+df_exr1 <- rbind(df_exr1, df_temp1)
+
+ggplot(df_exr1) +
+  geom_histogram(aes(x = X, y = after_stat(density), fill = Tipo), bins = 2, center = 1, color = "black", alpha = 0.7, position = "dodge") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_bw() +
+  labs(title = "Ejercicio 1 Discreto: Comparación de Muestras")
+
+# ## f) Convergencia
+tamano <- c(10, 50, 100, 500, 1000)
+N <- 500
+df_convergencia1 <- data.frame()
+
+for (n in tamano){
+  estimacion_n <- replicate(N, {
+    X <- rexr1(n, theta_fijo)
+    estimar_theta1(X)
+  })
+  df_convergencia1 <- rbind(df_convergencia1, data.frame(n = factor(n), Estimacion = estimacion_n))
+}
+
+ggplot(df_convergencia1) +
+  geom_boxplot(aes(x = n, y = Estimacion, fill = n), alpha = 0.7) +
+  geom_hline(yintercept = theta_fijo, color = "red", linetype = "dashed", linewidth = 1) +
+  scale_fill_brewer(palette = "Set1") +
+  labs(title = "Convergencia del Estimador (Ejercicio 1)", x = "n", y = "Estimación de θ") +
+  theme_bw() + theme(legend.position = "none")
+# :::
+
+
+```
+
+```{}
+```
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
